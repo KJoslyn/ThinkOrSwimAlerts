@@ -1,0 +1,9 @@
+**/screenshots
+**/logs
+**/bin
+**/obj
+**/Properties
+*.dll
+*.csproj.user
+.vs/*
+secrets.json
