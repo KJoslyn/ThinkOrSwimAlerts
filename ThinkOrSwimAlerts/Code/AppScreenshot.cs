@@ -66,36 +66,59 @@ namespace ThinkOrSwimAlerts.Code
                 CopyPixelOperation.SourceCopy);
 
             //var dot = (Bitmap)Bitmap.FromFile("C:/Users/Admin/Pictures/Screenshots/blue_dot.png");
-            //var histo = GetHistogram(dot);
+            //var histo = GetDotColor(dot);
 
-            var histo = GetHistogram(bmp);
+            var color = GetDotColor(bmp, dotColors);
 
-            var count = histo[dotColors.Sell];
+            if (color == dotColors.Sell)
+            {
+                Console.WriteLine(DateTime.Now.TimeOfDay + "Sell");
+            }
+            else if (color == dotColors.Buy)
+            {
+                Console.WriteLine(DateTime.Now.TimeOfDay + "Buy");
+            }
+            else
+            {
+                Console.WriteLine(DateTime.Now.TimeOfDay + "Do nothing");
+            }
+
+            //var count = histo[dotColors.Sell];
 
             //Console.WriteLine("blah");
 
-            WriteBitmapToFile("C:/Users/Admin/WindowsServices/ThinkOrSwimAlerts/ThinkOrSwimAlerts/screenshots/blue_dot.png", bmp);
+            //WriteBitmapToFile("C:/Users/Admin/WindowsServices/ThinkOrSwimAlerts/ThinkOrSwimAlerts/screenshots/blue_dot.png", bmp);
         }
 
-        private static Dictionary<string, int> GetHistogram(Bitmap bmp, DotColors colors)
+        private static string GetDotColor(Bitmap bmp, DotColors colors)
         {
             // Store the histogram in a dictionary          
             Dictionary<string, int> histo = new Dictionary<string, int>();
-            for (int x = 0; x < bmp.Width; x++)
+            for (int x = bmp.Width - 1; x >= 0; x--)
             {
                 for (int y = 0; y < bmp.Height; y++)
                 {
                     // Get pixel color 
                     string c = bmp.GetPixel(x, y).Name;
-                    // If it exists in our 'histogram' increment the corresponding value, or add new
-                    if (histo.ContainsKey(c))
-                        histo[c] = histo[c] + 1;
-                    else
-                        histo.Add(c, 1);
+                    if (c == colors.Sell || c == colors.Buy)
+                    {
+                        // If it exists in our 'histogram' increment the corresponding value, or add new
+                        if (histo.ContainsKey(c))
+                        {
+                            histo[c]++;
+                            // TODO This is how many pixels are in the large dot. This could change
+                            if (histo[c] == 16)
+                            {
+                                return c;
+                            }
+                        }
+                        else
+                            histo.Add(c, 1);
+                    }
                 }
             }
 
-            return histo;
+            return "";
         }
 
         public static void WriteBitmapToFile(string filename, Bitmap bitmap)
