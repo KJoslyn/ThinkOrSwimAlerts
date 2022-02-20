@@ -22,7 +22,7 @@ namespace ThinkOrSwimAlerts
             catch (Exception ex)
             {
                 // TODO: This will actually catch any error thrown in the worker. Need to read about services and how they work.
-                EventLog.WriteEntry("ThikOrSwim alterts", ex.ToString(), EventLogEntryType.Error);
+                //EventLog.WriteEntry("ThikOrSwim alterts", ex.ToString(), EventLogEntryType.Error);
                 Log.Fatal(ex, "The application crashed");
             }
             finally

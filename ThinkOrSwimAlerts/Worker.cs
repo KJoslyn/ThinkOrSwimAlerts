@@ -35,7 +35,7 @@ namespace ThinkOrSwimAlerts
             _hostApplicationLifetime = hostApplicationLifetime;
         }
 
-        private int intervalSeconds = 30;
+        private int intervalSeconds = 5;
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -44,32 +44,31 @@ namespace ThinkOrSwimAlerts
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                TimeSpan now = DateTime.Now.TimeOfDay;
-                if (now >= marketCloseTime)
-                {
-                    Log.Information("Market now closed!");
-                    break;
-                }
-                else if (now <= marketOpenTime)
-                {
-                    Log.Information("Market not open yet!");
-                    // Or, wait until 9:30am
-                    await Task.Delay(30 * 1000, stoppingToken);
+                //TimeSpan now = DateTime.Now.TimeOfDay;
+                //if (now >= marketCloseTime)
+                //{
+                //    Log.Information("Market now closed!");
+                //    break;
+                //}
+                //else if (now <= marketOpenTime)
+                //{
+                //    Log.Information("Market not open yet!");
+                //    // Or, wait until 9:30am
+                //    await Task.Delay(30 * 1000, stoppingToken);
 
-                    continue;
-                }
-
-                AppScreenshot.CaptureApplication("thinkorswim", _dotColors);
+                //    continue;
+                //}
 
                 try
                 {
+                    AppScreenshot.CaptureApplication("thinkorswim", _dotColors);
                 }
                 catch (Exception ex)
                 {
-
+                    Log.Error( $"Error capturing application: {ex}" );
                 }
 
-                await Task.Delay(intervalSeconds*1000, stoppingToken);
+                //await Task.Delay(intervalSeconds*1000, stoppingToken);
             }
 
             _hostApplicationLifetime.StopApplication();
