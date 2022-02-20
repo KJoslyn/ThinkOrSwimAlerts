@@ -76,7 +76,12 @@ namespace ThinkOrSwimAlerts
 
                 try
                 {
-                    if (lastBuyOrSell < DateTime.Now.AddHours(-1))
+                    var timeSinceLastOrder = lastBuyOrSell == null
+                        ? TimeSpan.MaxValue
+                        : DateTime.Now - lastBuyOrSell;
+
+                    // TODO How much time to wait? Make this configurable
+                    if (timeSinceLastOrder < TimeSpan.FromHours(1))
                     {
                         Thread.Sleep(5000);
                         continue;

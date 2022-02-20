@@ -66,7 +66,8 @@ namespace ThinkOrSwimAlerts
 
             ChainOptionQuote quote = JsonConvert.DeserializeObject<ChainOptionQuote>(match.Value);
 
-            Console.WriteLine($"Bought {quote.symbol} {quote.putCall}S for mark price {quote.mark} at {DateTime.Now}");
+            var msg = $"Bought {quote.symbol} {quote.putCall}S for mark price {quote.mark} at {DateTime.Now}";
+            Log.Information( msg );
         }
 
         public async Task GetToken()
