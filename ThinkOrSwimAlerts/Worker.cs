@@ -10,8 +10,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Plivo;
+using RestSharp;
 using ThinkOrSwimAlerts.Code;
 using ThinkOrSwimAlerts.Configs;
+using ThinkOrSwimAlerts.Enums;
 
 namespace ThinkOrSwimAlerts
 {
@@ -19,6 +21,7 @@ namespace ThinkOrSwimAlerts
     {
         private readonly IHostApplicationLifetime _hostApplicationLifetime;
         private readonly DotColors _dotColors;
+        private readonly IConfiguration _config;
 
         public Worker(
             IHostApplicationLifetime hostApplicationLifetime,
@@ -33,6 +36,8 @@ namespace ThinkOrSwimAlerts
             _dotColors = configuration.GetSection("DotColors").Get<DotColors>();
 
             _hostApplicationLifetime = hostApplicationLifetime;
+
+            _config = configuration;
         }
 
         private int intervalSeconds = 5;
@@ -41,6 +46,11 @@ namespace ThinkOrSwimAlerts
         {
             TimeSpan marketOpenTime = new TimeSpan(9, 30, 0);
             TimeSpan marketCloseTime = new TimeSpan(16, 0, 0);
+
+            DateTime? lastBuyOrSell = null;
+
+            // TODO This configuration should be somewhere else
+            using var client = new TDClient(_config["TDAmeritrade:RefreshToken"], _config["TDAmeritrade:ClientKey"]);
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -59,19 +69,40 @@ namespace ThinkOrSwimAlerts
                 //    continue;
                 //}
 
+                if (client.AccessTokenNeedsUpdate())
+                {
+                    await client.GetToken();
+                }
+
                 try
                 {
-                    AppScreenshot.CaptureApplication("thinkorswim", _dotColors);
+                    if (lastBuyOrSell < DateTime.Now.AddHours(-1))
+                    {
+                        Thread.Sleep(5000);
+                        continue;
+                    }
+
+                    BuyOrSell? buyOrSell = AppScreenshot.DetectBuyOrSellSignal(_dotColors);
+                    if (buyOrSell != null)
+                    {
+                        lastBuyOrSell = DateTime.Now;
+                        await client.BuyOrSell((BuyOrSell)buyOrSell); // TODO Why doesn't the compiler know this isn't null?
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Log.Error( $"Error capturing application: {ex}" );
+                    Log.Error( $"Error in worker service: {ex}" );
                 }
 
                 //await Task.Delay(intervalSeconds*1000, stoppingToken);
             }
 
             _hostApplicationLifetime.StopApplication();
+        }
+
+        private void GetOption(BuyOrSell buyOrSell)
+        {
+            var client = new RestClient("https://api.tdameritrade.com/");
         }
     }
 }

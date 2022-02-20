@@ -7,23 +7,24 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using ThinkOrSwimAlerts.Configs;
+using ThinkOrSwimAlerts.Enums;
 
 namespace ThinkOrSwimAlerts.Code
 {
     public class AppScreenshot
     {
-        public static void CaptureApplication(string procName, DotColors dotColors)
+        public static BuyOrSell? DetectBuyOrSellSignal(DotColors dotColors)
         {
             Process proc;
 
             // Cater for cases when the process can't be located.
             try
             {
-                proc = Process.GetProcessesByName(procName)[0];
+                proc = Process.GetProcessesByName("thinkorswim")[0];
             }
             catch (IndexOutOfRangeException e)
             {
-                return;
+                return null;
             }
 
             var handle = proc.MainWindowHandle;
@@ -73,14 +74,17 @@ namespace ThinkOrSwimAlerts.Code
             if (color == dotColors.Sell)
             {
                 Console.WriteLine(DateTime.Now.TimeOfDay + "Sell");
+                return BuyOrSell.Sell;
             }
             else if (color == dotColors.Buy)
             {
                 Console.WriteLine(DateTime.Now.TimeOfDay + "Buy");
+                return BuyOrSell.Buy;
             }
             else
             {
                 Console.WriteLine(DateTime.Now.TimeOfDay + "Do nothing");
+                return null;
             }
 
             //var count = histo[dotColors.Sell];
