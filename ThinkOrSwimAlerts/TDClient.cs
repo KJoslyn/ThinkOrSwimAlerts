@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -9,7 +6,9 @@ using RestSharp;
 using Serilog;
 using TDAmeritrade;
 using TDAmeritrade.ViewModels;
+using ThinkOrSwimAlerts.Code;
 using ThinkOrSwimAlerts.Enums;
+using ThinkOrSwimAlerts.Exceptions;
 using ThinkOrSwimAlerts.TDAmeritrade;
 
 namespace ThinkOrSwimAlerts
@@ -30,13 +29,11 @@ namespace ThinkOrSwimAlerts
 
         public Token? AccessToken { get; set; }
 
-        public DateTime Expiration { get; set; }
-
-        private RestClient _client = new RestClient("https://api.tdameritrade.com/");
+        private RestClient _client = new("https://api.tdameritrade.com/");
 
         private string _consumerKey;
 
-        public async Task BuyOrSell(BuyOrSell buyOrSell)
+        public async Task<Tuple<string, float>> BuyOrSell(BuyOrSell buyOrSell)
         { 
             // TODO Configurable symbol
             string symbol = "AAPL";
@@ -66,8 +63,32 @@ namespace ThinkOrSwimAlerts
 
             ChainOptionQuote quote = JsonConvert.DeserializeObject<ChainOptionQuote>(match.Value);
 
-            var msg = $"Bought {quote.symbol} {quote.putCall}S for mark price {quote.mark} at {DateTime.Now}";
+            var msg = $"++++++++++Bought {quote.symbol} {quote.putCall}S for mark price {quote.mark} at {DateTime.Now}";
             Log.Information( msg );
+            return new Tuple<string, float>(quote.symbol, quote.mark);
+        }
+
+        public async Task<OptionQuote> GetOptionQuote(string symbol)
+        {
+            if (!OptionSymbolUtils.IsOptionSymbol(symbol))
+            {
+                throw new ArgumentException("Provided symbol is not an option symbol: " + symbol);
+            }
+            //string tdAmSymbol = OptionSymbolUtils.ConvertDateFormat(symbol, OptionSymbolUtils.StandardDateFormat, Constants.TDOptionDateFormat);
+
+            RestRequest request = new RestRequest($"v1/marketdata/{symbol}/quotes", Method.Get);
+            request.AddParameter("apikey", _consumerKey);
+            request.AddHeader("Authorization", $"Bearer {AccessToken.TokenStr}");
+
+            RestResponse response = await _client.ExecuteAsync(request);
+            if (!response.IsSuccessful || response.Content.Contains("Symbol not found"))
+            {
+                throw new MarketDataException("Get quote unsuccessful for symbol " + symbol);
+            }
+            Regex responseRegex = new Regex("{\"assetType.*?}");
+            Match match = responseRegex.Match(response.Content);
+            OptionQuote quote = JsonConvert.DeserializeObject<TDOptionQuote>(match.Value);
+            return quote;
         }
 
         public async Task GetToken()

@@ -47,10 +47,16 @@ namespace ThinkOrSwimAlerts
             TimeSpan marketOpenTime = new TimeSpan(9, 30, 0);
             TimeSpan marketCloseTime = new TimeSpan(16, 0, 0);
 
+            DateTime lastPositionUpdate = DateTime.MinValue;
+
             DateTime? lastBuyOrSell = null;
 
             // TODO This configuration should be somewhere else
             using var client = new TDClient(_config["TDAmeritrade:RefreshToken"], _config["TDAmeritrade:ClientKey"]);
+
+            string? currentPositionSymbol = null;
+            float? currentPosBuyPrice = 0;
+            float? lastPctDiff = 0;
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -76,14 +82,31 @@ namespace ThinkOrSwimAlerts
 
                 try
                 {
+                    var timeSinceLastPositionUpdate = currentPositionSymbol == null
+                        ? TimeSpan.MinValue
+                        : DateTime.Now - lastPositionUpdate;
+
+                    if (timeSinceLastPositionUpdate > TimeSpan.FromSeconds(15))
+                    {
+                        lastPositionUpdate = DateTime.Now;
+                        var quote = await client.GetOptionQuote(currentPositionSymbol);
+                        var pctDiff = (quote.Mark - currentPosBuyPrice)*100 / currentPosBuyPrice;
+                        if (Math.Abs((decimal)lastPctDiff - (decimal)pctDiff) > 2)
+                        {
+                            var plusOrMinus = pctDiff > 0 ? "+" : "";
+                            Log.Information( $"\t\tSymbol {currentPositionSymbol} at mark price {quote.Mark}. {plusOrMinus}{((float)pctDiff).ToString("0.00")}%");
+                            lastPctDiff = pctDiff;
+                        }
+                    }
+
                     var timeSinceLastOrder = lastBuyOrSell == null
                         ? TimeSpan.MaxValue
                         : DateTime.Now - lastBuyOrSell;
 
                     // TODO How much time to wait? Make this configurable
-                    if (timeSinceLastOrder < TimeSpan.FromHours(1))
+                    var timeBetweenOrders = TimeSpan.FromMinutes(2);
+                    if (timeSinceLastOrder < timeBetweenOrders)
                     {
-                        Thread.Sleep(5000);
                         continue;
                     }
 
@@ -91,7 +114,10 @@ namespace ThinkOrSwimAlerts
                     if (buyOrSell != null)
                     {
                         lastBuyOrSell = DateTime.Now;
-                        await client.BuyOrSell((BuyOrSell)buyOrSell); // TODO Why doesn't the compiler know this isn't null?
+                        var symbolAndPrice = await client.BuyOrSell((BuyOrSell)buyOrSell); // TODO Why doesn't the compiler know this isn't null?
+                        currentPositionSymbol = symbolAndPrice.Item1;
+                        currentPosBuyPrice = symbolAndPrice.Item2;
+                        lastPctDiff = 0;
                     }
                 }
                 catch (Exception ex)
