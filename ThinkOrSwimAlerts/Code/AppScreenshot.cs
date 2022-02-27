@@ -67,7 +67,8 @@ namespace ThinkOrSwimAlerts.Code
                 CopyPixelOperation.SourceCopy);
 
             //var dot = (Bitmap)Bitmap.FromFile("C:/Users/Admin/Pictures/Screenshots/blue_dot.png");
-            //var histo = GetDotColor(dot);
+            //var dot = (Bitmap)Bitmap.FromFile("C:/Users/Admin/WindowsServices/ThinkOrSwimAlerts/ThinkOrSwimAlerts/screenshots/arrows2.png");
+            //var color = GetDotColor(dot, dotColors);
 
             var color = GetDotColor(bmp, dotColors);
 
@@ -110,8 +111,9 @@ namespace ThinkOrSwimAlerts.Code
                         if (histo.ContainsKey(c))
                         {
                             histo[c]++;
-                            // TODO This is how many pixels are in the large dot. This could change
-                            if (histo[c] == 16)
+                            // TODO 16 pixels in large dot for POLY. This could change
+                            // TODO 32 pixels in arrow for Macnsqueeze. This could change
+                            if (histo[c] == 32)
                             {
                                 return c;
                             }
