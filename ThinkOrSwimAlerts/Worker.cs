@@ -1,16 +1,12 @@
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 using Serilog;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Plivo;
 using RestSharp;
 using ThinkOrSwimAlerts.Code;
 using ThinkOrSwimAlerts.Configs;
@@ -168,11 +164,15 @@ namespace ThinkOrSwimAlerts
                 Symbol = symbol,
                 FirstBuy = DateTimeOffset.Now,
                 Indicator = Indicator.MacNSqueeze,
-                IndicatorVersion = "1.0",
+                IndicatorVersion = 1,
                 PutOrCall = buyOrSell == BuyOrSell.Buy ? PutOrCall.Call : PutOrCall.Put,
                 Underlying = OptionSymbolUtils.GetUnderlyingSymbol(symbol),
                 HighPrice = price,
-                LowPrice = price
+                LowPrice = price,
+                MaxQuantity = 1,
+                CurrentQuantity = 1,
+                GainOrLoss = 0,
+                AvgBuyPrice = price
             };
 
             await _ctx.AddAsync(pos);
@@ -181,7 +181,7 @@ namespace ThinkOrSwimAlerts
             {
                 PurchaseId = 0, // new
                 Position = pos,
-                Bought = pos.FirstBuy,
+                SecondsAfterFirstBuy = 0,
                 BuyPrice = price,
                 Day = DateTime.Now.DayOfWeek,
                 Quantity = 1,
@@ -200,11 +200,13 @@ namespace ThinkOrSwimAlerts
             {
                 PositionUpdateId = 0, // new
                 Position = currentPosition,
-                GainOrLossPct = pctDiff,
                 IsNewHigh = quote.Mark > currentPosition.HighPrice,
                 IsNewLow = quote.Mark < currentPosition.LowPrice,
                 Mark = quote.Mark,
-                SecondsAfterPurchase = (DateTimeOffset.Now - currentPosition.FirstBuy).Seconds
+                SecondsAfterFirstBuy = (DateTimeOffset.Now - currentPosition.FirstBuy).Seconds,
+
+                // TODO This is only applicable to the position as a whole, unless PositionUpdate gets a PurchaseId FK
+                GainOrLossPct = pctDiff
             };
             await _ctx.AddAsync(update);
         }

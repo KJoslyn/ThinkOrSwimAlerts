@@ -13,8 +13,9 @@ namespace ThinkOrSwimAlerts.Data.Models
         [Key]
         [DatabaseGenerated( DatabaseGeneratedOption.Identity )]
         public long PositionUpdateId { get; set; }
+        public uint PositionId { get; set; }
         public Position Position { get; set; }
-        public int SecondsAfterPurchase { get; set; }
+        public int SecondsAfterFirstBuy { get; set; }
         public float Mark { get; set; }
         public float GainOrLossPct { get; set; }
         public bool IsNewHigh { get; set; }

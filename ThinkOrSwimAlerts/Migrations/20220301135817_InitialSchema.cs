@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ThinkOrSwimAlerts.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class InitialSchema : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -11,15 +11,20 @@ namespace ThinkOrSwimAlerts.Migrations
                 name: "Positions",
                 columns: table => new
                 {
-                    PositionId = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PositionId = table.Column<long>(type: "bigint", nullable: false),
                     Symbol = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Underlying = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PutOrCall = table.Column<int>(type: "int", nullable: false),
                     FirstBuy = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
-                    FinalSell = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    FinalSell = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
                     Indicator = table.Column<int>(type: "int", nullable: false),
-                    IndicatorVersion = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    IndicatorVersion = table.Column<short>(type: "smallint", nullable: false),
+                    HighPrice = table.Column<float>(type: "real", nullable: false),
+                    LowPrice = table.Column<float>(type: "real", nullable: false),
+                    MaxQuantity = table.Column<short>(type: "smallint", nullable: false),
+                    CurrentQuantity = table.Column<short>(type: "smallint", nullable: false),
+                    GainOrLoss = table.Column<float>(type: "real", nullable: false),
+                    AvgBuyPrice = table.Column<float>(type: "real", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -32,8 +37,8 @@ namespace ThinkOrSwimAlerts.Migrations
                 {
                     PositionUpdateId = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    PositionId = table.Column<long>(type: "bigint", nullable: true),
-                    SecondsAfterPurchase = table.Column<int>(type: "int", nullable: false),
+                    PositionId = table.Column<long>(type: "bigint", nullable: false),
+                    SecondsAfterFirstBuy = table.Column<int>(type: "int", nullable: false),
                     Mark = table.Column<float>(type: "real", nullable: false),
                     GainOrLossPct = table.Column<float>(type: "real", nullable: false),
                     IsNewHigh = table.Column<bool>(type: "bit", nullable: false),
@@ -47,31 +52,30 @@ namespace ThinkOrSwimAlerts.Migrations
                         column: x => x.PositionId,
                         principalTable: "Positions",
                         principalColumn: "PositionId",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Purchases",
                 columns: table => new
                 {
-                    PurhaseId = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    PositionId = table.Column<long>(type: "bigint", nullable: true),
+                    PurchaseId = table.Column<long>(type: "bigint", nullable: false),
+                    PositionId = table.Column<long>(type: "bigint", nullable: false),
                     BuyPrice = table.Column<float>(type: "real", nullable: false),
-                    Bought = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: false),
+                    SecondsAfterFirstBuy = table.Column<int>(type: "int", nullable: false),
                     Bought15MinuteInterval = table.Column<int>(type: "int", nullable: false),
                     Day = table.Column<int>(type: "int", nullable: false),
-                    Quantity = table.Column<int>(type: "int", nullable: false)
+                    Quantity = table.Column<short>(type: "smallint", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Purchases", x => x.PurhaseId);
+                    table.PrimaryKey("PK_Purchases", x => x.PurchaseId);
                     table.ForeignKey(
                         name: "FK_Purchases_Positions_PositionId",
                         column: x => x.PositionId,
                         principalTable: "Positions",
                         principalColumn: "PositionId",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
