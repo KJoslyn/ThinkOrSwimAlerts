@@ -5,6 +5,8 @@ using Serilog;
 using System;
 using System.Diagnostics;
 using System.IO;
+using Microsoft.EntityFrameworkCore;
+using ThinkOrSwimAlerts.Data;
 
 namespace ThinkOrSwimAlerts
 {
@@ -54,6 +56,8 @@ namespace ThinkOrSwimAlerts
                 .UseSerilog()
                 .ConfigureServices((hostcontext, services) =>
                 {
+                    services.AddDbContext<PositionDb>(options =>
+                        options.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=ToS;"));
                     services.AddHostedService<Worker>();
                 });
         }
