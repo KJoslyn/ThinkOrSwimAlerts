@@ -6,6 +6,7 @@ using System.Drawing.Imaging;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Serilog;
 using ThinkOrSwimAlerts.Configs;
 using ThinkOrSwimAlerts.Enums;
 
@@ -70,6 +71,12 @@ namespace ThinkOrSwimAlerts.Code
             //var dot = (Bitmap)Bitmap.FromFile("C:/Users/Admin/WindowsServices/ThinkOrSwimAlerts/ThinkOrSwimAlerts/screenshots/arrows2.png");
             //var color = GetDotColor(dot, dotColors);
 
+            if (! isInitted)
+            {
+                InitFirstHisto(bmp, dotColors);
+                isInitted = true;
+            }
+
             var color = GetDotColor(bmp, dotColors);
 
             if (color == dotColors.Sell)
@@ -85,14 +92,54 @@ namespace ThinkOrSwimAlerts.Code
             else
             {
                 Console.WriteLine(DateTime.Now.TimeOfDay + "Do nothing");
-                return null;
             }
 
             //var count = histo[dotColors.Sell];
 
             //Console.WriteLine("blah");
 
-            //WriteBitmapToFile("C:/Users/Admin/WindowsServices/ThinkOrSwimAlerts/ThinkOrSwimAlerts/screenshots/blue_dot.png", bmp);
+            //WriteBitmapToFile("C:/Users/Admin/WindowsServices/ThinkOrSwimAlerts/ThinkOrSwimAlerts/screenshots/blue_half.png", bmp);
+
+            return null;
+        }
+
+        private static bool isInitted = false;
+        private static Dictionary<string, int> pastColors;
+
+        private static void InitFirstHisto(Bitmap bmp, DotColors colors)
+        {
+            // Store the histogram in a dictionary          
+            pastColors = new Dictionary<string, int>();
+            for (int x = bmp.Width - 1; x >= 0; x--)
+            {
+                for (int y = 0; y < bmp.Height; y++)
+                {
+                    // Get pixel color 
+                    string c = bmp.GetPixel(x, y).Name;
+                    if (c == colors.Sell || c == colors.Buy)
+                    {
+                        // If it exists in our 'histogram' increment the corresponding value, or add new
+                        if (pastColors.ContainsKey(c))
+                        {
+                            pastColors[c]++;
+                            // TODO 16 pixels in large dot for POLY. This could change
+                            // TODO 32 pixels in arrow for Macnsqueeze. This could change
+                            //if (histo[c] == 32)
+                            //{
+                            //    return c;
+                            //}
+                        }
+                        else
+                            pastColors.Add(c, 1);
+                    }
+                }
+            }
+
+            foreach (var color in pastColors.Keys)
+            {
+                Log.Information($"Added color {color} with value {pastColors[color]} (numArrows = {pastColors[color]/32}) to pastColors during Init");
+                
+            }
         }
 
         private static string GetDotColor(Bitmap bmp, DotColors colors)
@@ -113,14 +160,31 @@ namespace ThinkOrSwimAlerts.Code
                             histo[c]++;
                             // TODO 16 pixels in large dot for POLY. This could change
                             // TODO 32 pixels in arrow for Macnsqueeze. This could change
-                            if (histo[c] == 32)
-                            {
-                                return c;
-                            }
+                            //if (histo[c] == 32)
+                            //{
+                            //    return c;
+                            //}
                         }
                         else
                             histo.Add(c, 1);
                     }
+                }
+            }
+
+            foreach (var key in histo.Keys)
+            {
+                if (!pastColors.ContainsKey(key))
+                {
+                    pastColors.Add(key, histo[key]);
+                    Log.Information($"Adding new color {key} to pastColors with value {histo[key]} (numArrows = {pastColors[key]/32})");
+                    return key;
+                }
+
+                if (histo[key] > pastColors[key])
+                {
+                    pastColors[key] = histo[key];
+                    Log.Information($"Color {key} at {histo[key]}:{histo[key]/32}- greater than past value of {pastColors[key]}:{pastColors[key]/32}");
+                    return key;
                 }
             }
 
