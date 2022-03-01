@@ -182,8 +182,8 @@ namespace ThinkOrSwimAlerts.Code
 
                 if (histo[key] > pastColors[key])
                 {
-                    pastColors[key] = histo[key];
                     Log.Information($"Color {key} at {histo[key]}:{histo[key]/32}- greater than past value of {pastColors[key]}:{pastColors[key]/32}");
+                    pastColors[key] = histo[key];
                     return key;
                 }
             }
