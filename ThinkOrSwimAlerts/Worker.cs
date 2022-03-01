@@ -105,7 +105,7 @@ namespace ThinkOrSwimAlerts
                         var quote = await client.GetOptionQuote(currentPosition.Symbol);
                         var pctDiff = (quote.Mark - currentPosBuyPrice)*100 / currentPosBuyPrice;
 
-                        await CreatePositionUpdate(currentPosition, quote, (float)pctDiff);
+                        await AddPositionUpdate(currentPosition, quote, (float)pctDiff);
 
                         if (quote.Mark > currentPosition.HighPrice)
                         {
@@ -116,6 +116,8 @@ namespace ThinkOrSwimAlerts
                         {
                             currentPosition.LowPrice = quote.Mark;
                         }
+
+                        await _ctx.SaveChangesAsync();
 
                         if (Math.Abs((decimal)lastPctDiff - (decimal)pctDiff) > 2)
                         {
@@ -192,7 +194,7 @@ namespace ThinkOrSwimAlerts
             return pos;
         }
 
-        private async Task CreatePositionUpdate(Position currentPosition, OptionQuote quote, float pctDiff)
+        private async Task AddPositionUpdate(Position currentPosition, OptionQuote quote, float pctDiff)
         {
             PositionUpdate update = new PositionUpdate
             {
@@ -205,7 +207,6 @@ namespace ThinkOrSwimAlerts
                 SecondsAfterPurchase = (DateTimeOffset.Now - currentPosition.FirstBuy).Seconds
             };
             await _ctx.AddAsync(update);
-            await _ctx.SaveChangesAsync();
         }
 
         private void GetOption(BuyOrSell buyOrSell)
