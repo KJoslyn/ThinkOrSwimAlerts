@@ -139,10 +139,41 @@ namespace ThinkOrSwimAlerts
                     {
                         lastBuyOrSell = DateTime.Now;
                         var symbolAndPrice = await client.BuyOrSell((BuyOrSell)buyOrSell); // TODO Why doesn't the compiler know this isn't null?
+                        var oldPosition = currentPosition;
                         currentPosition = await CreatePosition(symbolAndPrice.Item1, (BuyOrSell) buyOrSell,
                             symbolAndPrice.Item2);
                         currentPosBuyPrice = symbolAndPrice.Item2;
                         lastPctDiff = 0;
+
+                        if (oldPosition != null)
+                        {
+                            // TODO Turn into function and refactor with above
+                            var quote = await client.GetOptionQuote(currentPosition.Symbol);
+                            var pctDiff = (quote.Mark - currentPosBuyPrice)*100 / currentPosBuyPrice;
+                            oldPosition.FinalSell = DateTimeOffset.Now;
+                            oldPosition.CurrentQuantity = 0;
+                            oldPosition.GainOrLoss = (float)pctDiff;
+
+                            await AddPositionUpdate(oldPosition, quote, (float)pctDiff);
+
+                            if (quote.Mark > oldPosition.HighPrice)
+                            {
+                                oldPosition.HighPrice = quote.Mark;
+                            }
+
+                            if (quote.Mark < oldPosition.LowPrice)
+                            {
+                                oldPosition.LowPrice = quote.Mark;
+                            }
+
+                            await _ctx.SaveChangesAsync();
+
+                            if (Math.Abs((decimal)lastPctDiff - (decimal)pctDiff) > 2)
+                            {
+                                var plusOrMinus = pctDiff > 0 ? "+" : "";
+                                Log.Information( $"Symbol {oldPosition.Symbol} at mark price {quote.Mark}. {plusOrMinus}{((float)pctDiff).ToString("0.00")}%");
+                            }
+                        }
                     }
                 }
                 catch (Exception ex)
