@@ -9,7 +9,7 @@ namespace ThinkOrSwimAlerts.Data.Models
     {
         [Key]
         [DatabaseGenerated( DatabaseGeneratedOption.Identity )]
-        public long PurhaseId { get; set; }
+        public long PurchaseId { get; set; }
         public Position Position { get; set; }
         public float BuyPrice { get; set; }
         public DateTimeOffset Bought { get; set; }

@@ -33,6 +33,44 @@ namespace ThinkOrSwimAlerts.Enums
         h3_00,
         h3_15,
         h3_30,
-        h3_45
-    } 
+        h3_45,
+        OUT_OF_BOUNDS
+    }
+
+    public static class FifteenMinuteIntervalUtils
+    {
+        public static FifteenMinuteInterval GetFifteenMinuteInterval()
+        {
+            var hour = DateTime.Now.Hour;
+            var minute = DateTime.Now.Minute;
+
+            if (hour == 9 && minute >= 45) return FifteenMinuteInterval.h9_45;
+            if (hour == 9 && minute >= 30) return FifteenMinuteInterval.h9_30;
+            if (hour == 10 && minute >= 45) return FifteenMinuteInterval.h10_45;
+            if (hour == 10 && minute >= 30) return FifteenMinuteInterval.h10_30;
+            if (hour == 10 && minute >= 15) return FifteenMinuteInterval.h10_15;
+            if (hour == 10) return FifteenMinuteInterval.h10_00;
+            if (hour == 11 && minute >= 45) return FifteenMinuteInterval.h11_45;
+            if (hour == 11 && minute >= 30) return FifteenMinuteInterval.h11_30;
+            if (hour == 11 && minute >= 15) return FifteenMinuteInterval.h11_15;
+            if (hour == 11) return FifteenMinuteInterval.h11_00;
+            if (hour == 12 && minute >= 45) return FifteenMinuteInterval.h12_45;
+            if (hour == 12 && minute >= 30) return FifteenMinuteInterval.h12_30;
+            if (hour == 12 && minute >= 15) return FifteenMinuteInterval.h12_15;
+            if (hour == 12) return FifteenMinuteInterval.h12_00;
+            if (hour == 13 && minute >= 45) return FifteenMinuteInterval.h1_45;
+            if (hour == 13 && minute >= 30) return FifteenMinuteInterval.h1_30;
+            if (hour == 13 && minute >= 15) return FifteenMinuteInterval.h1_15;
+            if (hour == 13) return FifteenMinuteInterval.h1_00;
+            if (hour == 14 && minute >= 45) return FifteenMinuteInterval.h2_45;
+            if (hour == 14 && minute >= 30) return FifteenMinuteInterval.h2_30;
+            if (hour == 14 && minute >= 15) return FifteenMinuteInterval.h2_15;
+            if (hour == 14) return FifteenMinuteInterval.h2_00;
+            if (hour == 15 && minute >= 45) return FifteenMinuteInterval.h3_45;
+            if (hour == 15 && minute >= 30) return FifteenMinuteInterval.h3_30;
+            if (hour == 15 && minute >= 15) return FifteenMinuteInterval.h3_15;
+            if (hour == 15) return FifteenMinuteInterval.h3_00;
+            return FifteenMinuteInterval.OUT_OF_BOUNDS;
+        }
+    }
 }

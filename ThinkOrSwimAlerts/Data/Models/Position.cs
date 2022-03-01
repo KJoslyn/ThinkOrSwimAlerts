@@ -14,8 +14,10 @@ namespace ThinkOrSwimAlerts.Data.Models
         public string Underlying { get; set; }
         public PutOrCall PutOrCall { get; set; }
         public DateTimeOffset FirstBuy { get; set; }
-        public DateTimeOffset FinalSell { get; set; }
+        public DateTimeOffset? FinalSell { get; set; }
         public Indicator Indicator { get; set; }
         public string IndicatorVersion { get; set; }
+        public float HighPrice { get; set; }
+        public float LowPrice { get; set; }
     }
 }
