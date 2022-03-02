@@ -173,16 +173,23 @@ namespace ThinkOrSwimAlerts.Code
 
             foreach (var key in histo.Keys)
             {
+                // If the cursor is over part of the study, the arrows will enlarge, so we need a mechanism to tell
+                // whether this is just an enlargement or not.
+                if (histo[key] % 32 != 0)
+                {
+                    return "";
+                }
+
                 if (!pastColors.ContainsKey(key))
                 {
                     pastColors.Add(key, histo[key]);
-                    Log.Information($"Adding new color {key} to pastColors with value {histo[key]} (numArrows = {pastColors[key]/32})");
+                    Log.Information($"Adding new color {key} to pastColors with value {histo[key]} (numArrows = {(float)pastColors[key]/32.0})");
                     return key;
                 }
 
-                if (histo[key] > pastColors[key])
+                if (histo[key] == pastColors[key] + 32)
                 {
-                    Log.Information($"Color {key} at {histo[key]}:{histo[key]/32}- greater than past value of {pastColors[key]}:{pastColors[key]/32}");
+                    Log.Information($"Color {key} at {histo[key]}:{(float)histo[key]/32.0}- greater than past value of {pastColors[key]}:{(float)pastColors[key]/32.0}");
                     pastColors[key] = histo[key];
                     return key;
                 }
