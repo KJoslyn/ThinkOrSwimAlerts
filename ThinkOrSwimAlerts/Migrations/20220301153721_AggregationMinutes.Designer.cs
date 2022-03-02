@@ -10,8 +10,8 @@ using ThinkOrSwimAlerts.Data;
 namespace ThinkOrSwimAlerts.Migrations
 {
     [DbContext(typeof(PositionDb))]
-    [Migration("20220301135817_InitialSchema")]
-    partial class InitialSchema
+    [Migration("20220301153721_AggregationMinutes")]
+    partial class AggregationMinutes
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -26,7 +26,10 @@ namespace ThinkOrSwimAlerts.Migrations
                     b.Property<long>("PositionId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None);
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<long>("AggregationMinutes")
+                        .HasColumnType("bigint");
 
                     b.Property<float>("AvgBuyPrice")
                         .HasColumnType("real");
@@ -111,7 +114,7 @@ namespace ThinkOrSwimAlerts.Migrations
                     b.Property<long>("PurchaseId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.None);
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<int>("Bought15MinuteInterval")
                         .HasColumnType("int");

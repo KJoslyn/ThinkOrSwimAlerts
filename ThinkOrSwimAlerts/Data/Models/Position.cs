@@ -9,7 +9,7 @@ namespace ThinkOrSwimAlerts.Data.Models
     {
         [Key]
         [DatabaseGenerated( DatabaseGeneratedOption.Identity )]
-        public uint PositionId { get; set; }
+        public long PositionId { get; set; }
         public string Symbol { get; set; }
         public string Underlying { get; set; }
         public PutOrCall PutOrCall { get; set; }
@@ -17,6 +17,7 @@ namespace ThinkOrSwimAlerts.Data.Models
         public DateTimeOffset? FinalSell { get; set; }
         public Indicator Indicator { get; set; }
         public short IndicatorVersion { get; set; }
+        public uint AggregationMinutes { get; set; }
 
         // Highest Price that this position achieved during its lifetime
         public float HighPrice { get; set; }

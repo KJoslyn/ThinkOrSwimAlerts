@@ -148,8 +148,8 @@ namespace ThinkOrSwimAlerts
                         if (oldPosition != null)
                         {
                             // TODO Turn into function and refactor with above
-                            var quote = await client.GetOptionQuote(currentPosition.Symbol);
-                            var pctDiff = (quote.Mark - currentPosBuyPrice)*100 / currentPosBuyPrice;
+                            var quote = await client.GetOptionQuote(oldPosition.Symbol);
+                            var pctDiff = (quote.Mark - oldPosition.AvgBuyPrice)*100 / oldPosition.AvgBuyPrice;
                             oldPosition.FinalSell = DateTimeOffset.Now;
                             oldPosition.CurrentQuantity = 0;
                             oldPosition.GainOrLoss = (float)pctDiff;
@@ -168,11 +168,8 @@ namespace ThinkOrSwimAlerts
 
                             await _ctx.SaveChangesAsync();
 
-                            if (Math.Abs((decimal)lastPctDiff - (decimal)pctDiff) > 2)
-                            {
-                                var plusOrMinus = pctDiff > 0 ? "+" : "";
-                                Log.Information( $"Symbol {oldPosition.Symbol} at mark price {quote.Mark}. {plusOrMinus}{((float)pctDiff).ToString("0.00")}%");
-                            }
+                            var plusOrMinus = pctDiff > 0 ? "+" : "";
+                            Log.Information( $"Symbol {oldPosition.Symbol} ended at mark price {quote.Mark}. {plusOrMinus}{((float)pctDiff).ToString("0.00")}%");
                         }
                     }
                 }
@@ -203,7 +200,8 @@ namespace ThinkOrSwimAlerts
                 MaxQuantity = 1,
                 CurrentQuantity = 1,
                 GainOrLoss = 0,
-                AvgBuyPrice = price
+                AvgBuyPrice = price,
+                AggregationMinutes = 5
             };
 
             await _ctx.AddAsync(pos);
@@ -234,7 +232,7 @@ namespace ThinkOrSwimAlerts
                 IsNewHigh = quote.Mark > currentPosition.HighPrice,
                 IsNewLow = quote.Mark < currentPosition.LowPrice,
                 Mark = quote.Mark,
-                SecondsAfterFirstBuy = (DateTimeOffset.Now - currentPosition.FirstBuy).Seconds,
+                SecondsAfterFirstBuy = (int)(DateTimeOffset.Now - currentPosition.FirstBuy).TotalSeconds,
 
                 // TODO This is only applicable to the position as a whole, unless PositionUpdate gets a PurchaseId FK
                 GainOrLossPct = pctDiff

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ThinkOrSwimAlerts.Migrations
 {
-    public partial class InitialSchema : Migration
+    public partial class InitalTables : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -11,7 +11,8 @@ namespace ThinkOrSwimAlerts.Migrations
                 name: "Positions",
                 columns: table => new
                 {
-                    PositionId = table.Column<long>(type: "bigint", nullable: false),
+                    PositionId = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Symbol = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Underlying = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PutOrCall = table.Column<int>(type: "int", nullable: false),
@@ -59,7 +60,8 @@ namespace ThinkOrSwimAlerts.Migrations
                 name: "Purchases",
                 columns: table => new
                 {
-                    PurchaseId = table.Column<long>(type: "bigint", nullable: false),
+                    PurchaseId = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     PositionId = table.Column<long>(type: "bigint", nullable: false),
                     BuyPrice = table.Column<float>(type: "real", nullable: false),
                     SecondsAfterFirstBuy = table.Column<int>(type: "int", nullable: false),
